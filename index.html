@@ -1,682 +1,888 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="h-full">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>午餐吃什麼？美食選擇與隨機轉盤</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Noto Sans TC & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#fff7ed',
-                            100: '#ffedd5',
-                            500: '#f97316',
-                            600: '#ea580c',
-                            700: '#c2410c',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Noto Sans TC', 'Inter', 'sans-serif'],
-                    },
-                    screens: {
-                        'xs': '475px',
-                    }
-                }
-            }
-        }
-    </script>
+  <!-- 支援手機與平板響應式顯示 -->
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
-    <style>
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #faf7f5;
-            -webkit-tap-highlight-color: transparent;
-        }
+  <title>午餐吃什麼？</title>
 
-        /* Responsive Wheel Canvas Container */
-        .wheel-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 280px;
-            aspect-ratio: 1 / 1;
-            margin: 0 auto;
-        }
-        
-        #wheelCanvas {
-            width: 100% !important;
-            height: 100% !important;
-            transition: transform 4s cubic-bezier(0.15, 0.99, 0.15, 0.99);
-            border-radius: 50%;
-            box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.25);
-        }
+  <style>
+    :root {
+      --primary-color: #ff6b35;
+      --primary-dark: #e45724;
+      --header-color: #ff8c42;
+      --background-color: #f7f7f7;
+      --card-color: #ffffff;
+      --text-color: #333333;
+      --muted-color: #666666;
+      --border-color: #dddddd;
+      --radius: 14px;
+    }
 
-        .wheel-pointer {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 22px solid #ea580c;
-            z-index: 20;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        /* Pulse Ring Animation for GPS Status */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.9; }
-            50% { transform: scale(1.25); opacity: 0.35; }
-            100% { transform: scale(0.95); opacity: 0.9; }
-        }
-        .pulse-ring {
-            animation: pulse-ring 2s infinite ease-in-out;
-        }
-    </style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text-color);
+      background: var(--background-color);
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* 頁首 */
+    header {
+      padding: 36px 20px;
+      color: white;
+      background: var(--header-color);
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 5vw, 36px);
+    }
+
+    header p {
+      margin: 0;
+      font-size: clamp(15px, 2vw, 18px);
+    }
+
+    /* 主要內容 */
+    .container {
+      width: min(100% - 32px, 1000px);
+      margin: 24px auto 40px;
+    }
+
+    /* 搜尋區塊 */
+    .search-panel {
+      padding: clamp(18px, 4vw, 28px);
+      background: var(--card-color);
+      border-radius: var(--radius);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      align-items: end;
+    }
+
+    .form-group {
+      min-width: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    select,
+    button {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    select {
+      border: 1px solid var(--border-color);
+      background: white;
+      cursor: pointer;
+    }
+
+    button {
+      border: none;
+      color: white;
+      background: var(--primary-color);
+      cursor: pointer;
+      font-weight: bold;
+      transition:
+        background-color 0.2s ease,
+        transform 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      background: #999999;
+      cursor: not-allowed;
+    }
+
+    /* 位置資訊 */
+    .location-info {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 8px;
+      color: #8a421e;
+      background: #fff3e9;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    /* 狀態文字 */
+    .status {
+      min-height: 24px;
+      margin: 20px 0 8px;
+      color: var(--primary-dark);
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* 搜尋結果標題 */
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 25px 0 15px;
+    }
+
+    .result-header h2 {
+      margin: 0;
+      font-size: clamp(22px, 4vw, 28px);
+    }
+
+    #resultCount {
+      color: var(--muted-color);
+      white-space: nowrap;
+    }
+
+    /* 店家列表 */
+    .store-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .store-card {
+      min-width: 0;
+      padding: 18px;
+      background: var(--card-color);
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .store-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+    }
+
+    .store-name {
+      display: inline-block;
+      max-width: 100%;
+      margin-bottom: 10px;
+      color: #e85b2a;
+      font-size: 19px;
+      font-weight: bold;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+
+    .store-name:hover {
+      text-decoration: underline;
+    }
+
+    .store-info {
+      color: var(--muted-color);
+      font-size: 14px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .distance {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 9px;
+      border-radius: 20px;
+      color: #e85b2a;
+      background: #fff0e8;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 30px 20px;
+      border-radius: 12px;
+      color: #777777;
+      background: white;
+      text-align: center;
+    }
+
+    /* 平板 */
+    @media (max-width: 900px) {
+      .form-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .form-group:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .store-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* 手機 */
+    @media (max-width: 600px) {
+      header {
+        padding:
+          max(28px, env(safe-area-inset-top))
+          16px
+          28px;
+      }
+
+      .container {
+        width: min(100% - 24px, 1000px);
+        margin-top: 16px;
+      }
+
+      .search-panel {
+        padding: 16px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .form-group:last-child {
+        grid-column: auto;
+      }
+
+      select,
+      button {
+        min-height: 52px;
+        font-size: 16px;
+      }
+
+      .location-info {
+        font-size: 14px;
+      }
+
+      .result-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      #resultCount {
+        font-size: 14px;
+      }
+
+      .store-list {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .store-card {
+        padding: 16px;
+      }
+
+      .store-name {
+        font-size: 18px;
+      }
+    }
+
+    /* 很小的手機 */
+    @media (max-width: 380px) {
+      header h1 {
+        font-size: 25px;
+      }
+
+      .container {
+        width: calc(100% - 20px);
+      }
+
+      .search-panel {
+        padding: 14px;
+      }
+
+      .store-card {
+        padding: 14px;
+      }
+    }
+
+    /* 減少動畫 */
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
 </head>
-<body class="text-slate-800 antialiased min-h-full flex flex-col justify-between selection:bg-brand-500 selection:text-white">
 
-    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-orange-100/80 shadow-sm">
-        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-2.5 sm:gap-3">
-                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-600 to-amber-400 flex items-center justify-center text-white text-lg sm:text-xl shadow-md shadow-brand-500/20">
-                    <i class="fa-solid fa-utensils"></i>
-                </div>
-                <div>
-                    <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight tracking-tight">午餐吃什麼？</h1>
-                    <p class="text-[10px] sm:text-xs text-slate-500">美食地圖搜尋 & 決策轉盤</p>
-                </div>
-            </div>
-            
-            <button id="reGeolocateBtn" onclick="getUserLocation()" class="text-xs bg-orange-50 hover:bg-orange-100 text-brand-600 px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl font-medium transition flex items-center gap-1.5 border border-orange-200 active:scale-95 shrink-0">
-                <i class="fa-solid fa-location-crosshairs text-brand-500"></i>
-                <span class="hidden xs:inline">重新定位</span>
-            </button>
-        </div>
-    </header>
+<body>
+  <header>
+    <h1>午餐吃什麼？</h1>
+    <p>搜尋你附近的餐飲店家</p>
+  </header>
 
-    <main class="max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-6 w-full flex-grow space-y-4 sm:space-y-6">
+  <main class="container">
+    <section class="search-panel">
+      <div class="form-row">
+        <!-- 搜尋距離 -->
+        <div class="form-group">
+          <label for="radius">搜尋範圍</label>
 
-        <!-- Location Status Card -->
-        <section class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-orange-100 transition-all">
-            <div class="flex items-start gap-3">
-                <div class="p-2.5 rounded-xl bg-orange-50 text-brand-600 shrink-0 mt-0.5">
-                    <i class="fa-solid fa-location-dot text-base sm:text-lg"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <span class="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">目前所在地點</span>
-                        <span id="locationBadge" class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 pulse-ring"></span>
-                            定位中...
-                        </span>
-                    </div>
-                    <div id="addressText" class="text-slate-800 font-bold text-sm sm:text-base truncate">
-                        正在取得 GPS 經緯度與地址資料...
-                    </div>
-                    <div id="coordsText" class="text-[11px] text-slate-400 mt-0.5 font-mono">
-                        經緯度: --
-                    </div>
-                </div>
-            </div>
-
-            <!-- Manual Address Fallback Input -->
-            <div id="manualAddressBox" class="mt-3 pt-3 border-t border-slate-100 hidden">
-                <p class="text-xs text-slate-500 mb-2">GPS 定位未授權或超時？可手動輸入目前地標或地址：</p>
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <input type="text" id="manualAddressInput" placeholder="例如：台北101 或 淡水捷運站" class="flex-1 text-sm px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500">
-                    <button onclick="setManualLocation()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-xl transition active:scale-95 shadow-sm">
-                        設定位置
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5">
-
-            <!-- Step 1: Distance Selection -->
-            <section class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-orange-100 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center gap-2 mb-2 sm:mb-3">
-                        <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-brand-500 text-white text-xs font-black flex items-center justify-center shrink-0">1</span>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">選擇距離範圍</h2>
-                    </div>
-                    <p class="text-xs text-slate-500 mb-3 sm:mb-4">請選取希望移動的半徑範圍：</p>
-                    
-                    <div class="grid grid-cols-3 gap-2">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="distance" value="500" class="peer hidden" checked>
-                            <div class="p-2.5 sm:p-3 rounded-xl border-2 border-slate-100 text-center peer-checked:border-brand-500 peer-checked:bg-orange-50/60 peer-checked:text-brand-600 hover:border-slate-200 transition">
-                                <div class="text-xs sm:text-sm font-bold">500公尺</div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">步行 5-7分</div>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="distance" value="1000" class="peer hidden">
-                            <div class="p-2.5 sm:p-3 rounded-xl border-2 border-slate-100 text-center peer-checked:border-brand-500 peer-checked:bg-orange-50/60 peer-checked:text-brand-600 hover:border-slate-200 transition">
-                                <div class="text-xs sm:text-sm font-bold">1公里</div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">步行 12分</div>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="distance" value="1500" class="peer hidden">
-                            <div class="p-2.5 sm:p-3 rounded-xl border-2 border-slate-100 text-center peer-checked:border-brand-500 peer-checked:bg-orange-50/60 peer-checked:text-brand-600 hover:border-slate-200 transition">
-                                <div class="text-xs sm:text-sm font-bold">1.5公里</div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">騎車 3-5分</div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Step 2: Cuisine / Food Category Selection Dropdown -->
-            <section class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-orange-100 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center gap-2 mb-2 sm:mb-3">
-                        <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-brand-500 text-white text-xs font-black flex items-center justify-center shrink-0">2</span>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">選擇餐飲類型</h2>
-                    </div>
-                    <p class="text-xs text-slate-500 mb-3 sm:mb-4">篩選您偏好的美食風格：</p>
-                    
-                    <div class="relative">
-                        <select id="cuisineSelect" class="w-full text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 appearance-none cursor-pointer">
-                            <option value="all">🍱 全部類型 (All Cuisine)</option>
-                            <option value="restaurant">🍽️ 餐廳</option>
-                            <option value="fast_food">🥟 小吃店</option>
-                            <option value="noodles">🍜 麵食館</option>
-                            <option value="bento">🍱 便當快餐店</option>
-                            <option value="hotpot">🍲 火鍋店</option>
-                            <option value="bbq">🥩 燒烤店</option>
-                            <option value="brunch">🍳 早午餐店</option>
-                            <option value="cafe">☕ 咖啡廳</option>
-                            <option value="dessert">🍧 甜點冰品店</option>
-                            <option value="beverage">🧋 飲料店</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-            </section>
+          <select id="radius">
+            <option value="500">500 公尺內</option>
+            <option value="1000" selected>1 公里內</option>
+            <option value="1500">1.5 公里內</option>
+          </select>
         </div>
 
-        <section class="flex flex-col sm:flex-row gap-3">
-            <button id="searchBtn" onclick="searchNearbyPlaces()" class="flex-1 py-3.5 px-5 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 active:scale-[0.98] transition flex items-center justify-center gap-2 text-base min-h-[48px]">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <span>搜尋附近店家 (Step 3)</span>
-            </button>
-            <button id="wheelToggleBtn" onclick="toggleWheelModal()" class="py-3.5 px-6 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl shadow-lg shadow-amber-500/25 active:scale-[0.98] transition flex items-center justify-center gap-2 text-base shrink-0 min-h-[48px]">
-                <i class="fa-solid fa-arrows-spin text-lg"></i>
-                <span>幸運決策轉盤</span>
-            </button>
-        </section>
+        <!-- 店家類型 -->
+        <div class="form-group">
+          <label for="category">店家類型</label>
 
-        <section class="space-y-3.5">
-            <div class="flex items-center justify-between px-1">
-                <h3 class="font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2">
-                    <span>搜尋結果</span>
-                    <span id="resultCountBadge" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full font-medium hidden">0 家</span>
-                </h3>
-            </div>
-
-            <!-- Loading Spinner State -->
-            <div id="loader" class="hidden py-12 text-center bg-white rounded-2xl border border-orange-100 shadow-sm">
-                <div class="inline-block animate-spin rounded-full h-9 w-9 border-4 border-brand-500 border-t-transparent mb-3"></div>
-                <p class="text-slate-700 font-bold text-sm">正在依據經緯度搜尋周邊店家...</p>
-                <p class="text-xs text-slate-400 mt-1">連線 OpenStreetMap 地圖服務中</p>
-            </div>
-
-            <!-- Places Responsive Cards Grid -->
-            <div id="placesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
-                <!-- Initial Empty State -->
-                <div class="col-span-full bg-white rounded-2xl p-8 sm:p-12 text-center border border-dashed border-slate-200">
-                    <div class="w-14 h-14 bg-orange-50 text-brand-500 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl">
-                        <i class="fa-solid fa-bowl-food"></i>
-                    </div>
-                    <h4 class="font-bold text-slate-700 text-base mb-1">尚未進行搜尋</h4>
-                    <p class="text-xs text-slate-400 max-w-xs mx-auto">選取距離與類型後點擊「搜尋附近店家」，點擊店家名稱即可開啟 Google 地圖開始導航！</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <div id="wheelModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center shadow-2xl relative overflow-hidden transform transition-all">
-            <button onclick="toggleWheelModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm active:scale-95">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <h3 class="text-lg sm:text-xl font-black text-slate-800 mb-0.5">今天午餐吃什麼？</h3>
-            <p id="wheelSubtitle" class="text-xs text-slate-400 mb-4 sm:mb-5 truncate">幫猶豫不決的你抽一個美食！</p>
-
-            <div class="wheel-wrapper mb-4">
-                <div class="wheel-pointer"></div>
-                <canvas id="wheelCanvas" width="280" height="280"></canvas>
-            </div>
-
-            <div id="wheelResult" class="min-h-[60px] mb-3 flex flex-col items-center justify-center">
-                <p class="text-xs text-slate-400">點擊下方按鈕開始轉動轉盤</p>
-            </div>
-
-            <button id="spinBtn" onclick="spinWheel()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-brand-500 hover:from-amber-600 hover:to-brand-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/20 active:scale-[0.98] transition">
-                <i class="fa-solid fa-play mr-1.5"></i> 開始隨機抽取
-            </button>
+          <select id="category">
+            <option value="all">全部</option>
+            <option value="restaurant">餐廳</option>
+            <option value="snack">小吃店</option>
+            <option value="noodle">麵食館</option>
+            <option value="bento">便當快餐店</option>
+            <option value="hotpot">火鍋店</option>
+            <option value="bbq">燒烤店</option>
+            <option value="brunch">早午餐店</option>
+            <option value="cafe">咖啡廳</option>
+            <option value="dessert">甜點冰品店</option>
+            <option value="drink">飲料店</option>
+          </select>
         </div>
-    </div>
 
-    <footer class="bg-white border-t border-slate-100 py-4 text-center text-xs text-slate-400 mt-8">
-        <p>午餐吃什麼？ &copy; 美食搜尋與導航工具</p>
-    </footer>
+        <!-- 搜尋按鈕 -->
+        <div class="form-group">
+          <button id="searchButton">
+            搜尋店家
+          </button>
+        </div>
+      </div>
 
-    <script>
-        // State variables
-        let userCoords = { lat: 25.03397, lng: 121.56447 }; // Default: Taipei 101 Area
-        let currentAddressName = "目前位置 (GPS 取得中)";
-        let currentPlaces = [];
-        let isSpinning = false;
-        let currentRotation = 0;
-        let activeWheelItems = [];
+      <div id="locationInfo" class="location-info">
+        正在取得目前位置……
+      </div>
+    </section>
 
-        // Fallback Wheel Items when no search performed
-        const defaultWheelItems = [
-            '牛肉麵館', '排骨便當', '日式拉麵', '海鮮火鍋', 
-            '古早味小吃', '韓式泡菜鍋', '早午餐拼盤', '韓式炸雞', 
-            '台式魯肉飯', '迴轉壽司', '義大利麵', '美式漢堡'
-        ];
+    <div id="status" class="status"></div>
 
-        window.onload = function() {
-            getUserLocation();
-            drawWheel(defaultWheelItems);
-        };
+    <section>
+      <div class="result-header">
+        <h2>附近店家</h2>
+        <span id="resultCount"></span>
+      </div>
 
-        function getUserLocation() {
-            const badge = document.getElementById('locationBadge');
-            const addressText = document.getElementById('addressText');
-            const coordsText = document.getElementById('coordsText');
-            const manualBox = document.getElementById('manualAddressBox');
+      <div id="storeList" class="store-list">
+        <div class="empty">
+          請先允許網站取得目前位置，再按下「搜尋店家」。
+        </div>
+      </div>
+    </section>
+  </main>
 
-            badge.className = "inline-flex items-center gap-1 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium";
-            badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 pulse-ring"></span> 定位中...';
-            addressText.innerText = "正在取得 GPS 經緯度與地址資料...";
+  <script>
+    let userLocation = null;
+    let allStores = [];
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        userCoords.lat = position.coords.latitude;
-                        userCoords.lng = position.coords.longitude;
-                        
-                        coordsText.innerText = `經緯度: ${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)}`;
-                        badge.className = "inline-flex items-center gap-1 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium";
-                        badge.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i> GPS 定位成功';
-                        manualBox.classList.add('hidden');
+    const radiusSelect = document.getElementById("radius");
+    const categorySelect = document.getElementById("category");
+    const searchButton = document.getElementById("searchButton");
+    const locationInfo = document.getElementById("locationInfo");
+    const statusText = document.getElementById("status");
+    const storeList = document.getElementById("storeList");
+    const resultCount = document.getElementById("resultCount");
 
-                        // Reverse Geocode for display address name
-                        reverseGeocode(userCoords.lat, userCoords.lng);
-                    },
-                    (error) => {
-                        console.warn("Geolocation Warning:", error.message);
-                        badge.className = "inline-flex items-center gap-1 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-medium";
-                        badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-[10px]"></i> 定位受限';
-                        addressText.innerText = "無法取得 GPS 位置，可手動輸入下方地址";
-                        coordsText.innerText = `經緯度: ${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)} (預設值)`;
-                        manualBox.classList.remove('hidden');
-                    },
-                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-                );
-            } else {
-                badge.className = "inline-flex items-center gap-1 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-medium";
-                badge.innerHTML = '不支援定位';
-                addressText.innerText = "瀏覽器不支援地理定位功能";
-                manualBox.classList.remove('hidden');
-            }
+    /*
+     * 網頁載入後取得使用者目前位置
+     */
+    window.addEventListener("load", getUserLocation);
+
+    function getUserLocation() {
+      if (!navigator.geolocation) {
+        locationInfo.textContent =
+          "你的瀏覽器不支援定位功能。";
+
+        return;
+      }
+
+      locationInfo.textContent =
+        "正在取得目前位置……";
+
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          userLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          };
+
+          locationInfo.innerHTML = `
+            已取得目前位置：<br>
+            緯度：${userLocation.latitude.toFixed(6)}<br>
+            經度：${userLocation.longitude.toFixed(6)}
+          `;
+        },
+
+        function (error) {
+          let message = "無法取得目前位置。";
+
+          if (error.code === error.PERMISSION_DENIED) {
+            message =
+              "你拒絕了定位權限，請允許網站取得位置。";
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            message =
+              "目前無法取得位置資訊。";
+          } else if (error.code === error.TIMEOUT) {
+            message =
+              "取得位置逾時，請再試一次。";
+          }
+
+          locationInfo.textContent = message;
+        },
+
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
+      );
+    }
 
-        async function reverseGeocode(lat, lng) {
-            const addressText = document.getElementById('addressText');
-            try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=zh-TW`);
-                if (response.ok) {
-                    const data = await response.json();
-                    const addr = data.address || {};
-                    const formatted = data.display_name ? data.display_name.split(',')[0] : `${addr.road || addr.suburb || addr.city || '目前所在地'}`;
-                    currentAddressName = formatted;
-                    addressText.innerText = formatted || "目前所在位置";
-                } else {
-                    addressText.innerText = "已成功取得經緯度位置";
+    /*
+     * 搜尋按鈕
+     */
+    searchButton.addEventListener("click", async function () {
+      if (!userLocation) {
+        alert(
+          "尚未取得目前位置，請先允許定位功能。"
+        );
+
+        getUserLocation();
+        return;
+      }
+
+      const radius = Number(radiusSelect.value);
+
+      searchButton.disabled = true;
+      statusText.textContent = "正在搜尋附近店家……";
+      resultCount.textContent = "";
+      storeList.innerHTML = "";
+
+      try {
+        allStores = await searchNearbyStores(
+          userLocation.latitude,
+          userLocation.longitude,
+          radius
+        );
+
+        renderStores();
+        statusText.textContent = "";
+      } catch (error) {
+        console.error(error);
+
+        statusText.textContent =
+          "搜尋失敗，請稍後再試。";
+
+        storeList.innerHTML = `
+          <div class="empty">
+            搜尋店家時發生錯誤，請稍後再試。
+          </div>
+        `;
+      } finally {
+        searchButton.disabled = false;
+      }
+    });
+
+    /*
+     * 使用 OpenStreetMap Overpass API
+     * 搜尋附近的餐廳、速食店、咖啡廳、甜點店等
+     */
+    async function searchNearbyStores(
+      latitude,
+      longitude,
+      radius
+    ) {
+      const query = `
+        [out:json][timeout:25];
+
+        (
+          nwr["amenity"~"restaurant|fast_food|cafe|ice_cream|food_court"]
+            (around:${radius},${latitude},${longitude});
+
+          nwr["shop"~"bakery|confectionery|beverages"]
+            (around:${radius},${latitude},${longitude});
+        );
+
+        out center tags;
+      `;
+
+      const response = await fetch(
+        "https://overpass-api.de/api/interpreter",
+        {
+          method: "POST",
+          body: query
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Overpass API request failed"
+        );
+      }
+
+      const data = await response.json();
+
+      const stores = data.elements
+        .map(function (element) {
+          const tags = element.tags || {};
+
+          const storeLatitude =
+            element.lat ?? element.center?.lat;
+
+          const storeLongitude =
+            element.lon ?? element.center?.lon;
+
+          if (
+            storeLatitude === undefined ||
+            storeLongitude === undefined
+          ) {
+            return null;
+          }
+
+          const name =
+            tags.name ||
+            tags["name:zh"] ||
+            tags["name:en"] ||
+            "未命名店家";
+
+          const address =
+            tags["addr:full"] ||
+            buildAddress(tags) ||
+            "地址資料不完整";
+
+          const distance = calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            storeLatitude,
+            storeLongitude
+          );
+
+          return {
+            id: `${element.type}-${element.id}`,
+            name: name,
+            address: address,
+            phone: tags.phone || "",
+            amenity: tags.amenity || "",
+            shop: tags.shop || "",
+            cuisine: tags.cuisine || "",
+            latitude: storeLatitude,
+            longitude: storeLongitude,
+            distance: distance
+          };
+        })
+        .filter(Boolean);
+
+      /*
+       * 由近到遠排序
+       */
+      stores.sort(function (a, b) {
+        return a.distance - b.distance;
+      });
+
+      /*
+       * 移除重複店家
+       */
+      return Array.from(
+        new Map(
+          stores.map(function (store) {
+            return [store.id, store];
+          })
+        ).values()
+      );
+    }
+
+    /*
+     * 組合店家地址
+     */
+    function buildAddress(tags) {
+      return [
+        tags["addr:postcode"],
+        tags["addr:city"],
+        tags["addr:town"],
+        tags["addr:district"],
+        tags["addr:street"],
+        tags["addr:housenumber"]
+      ]
+        .filter(Boolean)
+        .join("");
+    }
+
+    /*
+     * 計算兩個經緯度之間的距離
+     * 回傳單位：公尺
+     */
+    function calculateDistance(
+      lat1,
+      lon1,
+      lat2,
+      lon2
+    ) {
+      const earthRadius = 6371000;
+
+      function toRadians(degree) {
+        return degree * Math.PI / 180;
+      }
+
+      const dLat = toRadians(lat2 - lat1);
+      const dLon = toRadians(lon2 - lon1);
+
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRadians(lat1)) *
+          Math.cos(toRadians(lat2)) *
+          Math.sin(dLon / 2) ** 2;
+
+      const c = 2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      );
+
+      return earthRadius * c;
+    }
+
+    /*
+     * 判斷店家是否符合所選類型
+     */
+    function matchCategory(store, category) {
+      if (category === "all") {
+        return true;
+      }
+
+      const text = [
+        store.name,
+        store.cuisine,
+        store.amenity,
+        store.shop
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      switch (category) {
+        case "restaurant":
+          return store.amenity === "restaurant";
+
+        case "snack":
+          return (
+            store.amenity === "fast_food" ||
+            /小吃|鹽酥雞|雞排|滷味|肉圓|臭豆腐/
+              .test(text)
+          );
+
+        case "noodle":
+          return /麵|拉麵|牛肉麵|麵線|米粉|河粉|烏龍|noodle/
+            .test(text);
+
+        case "bento":
+          return /便當|自助餐|快餐|燒臘|bento|lunch/
+            .test(text);
+
+        case "hotpot":
+          return /火鍋|鍋物|涮涮鍋|麻辣鍋|hotpot/
+            .test(text);
+
+        case "bbq":
+          return /燒烤|烤肉|串燒|炭火|bbq|barbecue/
+            .test(text);
+
+        case "brunch":
+          return /早午餐|早餐|brunch|breakfast/
+            .test(text);
+
+        case "cafe":
+          return (
+            store.amenity === "cafe" ||
+            /咖啡|coffee|cafe/.test(text)
+          );
+
+        case "dessert":
+          return (
+            store.amenity === "ice_cream" ||
+            store.shop === "confectionery" ||
+            /甜點|蛋糕|冰品|冰淇淋|豆花|剉冰|dessert/
+              .test(text)
+          );
+
+        case "drink":
+          return (
+            store.shop === "beverages" ||
+            /飲料|茶飲|手搖|果汁|珍珠|drink|tea|juice/
+              .test(text)
+          );
+
+        default:
+          return true;
+      }
+    }
+
+    /*
+     * 顯示店家
+     */
+    function renderStores() {
+      const selectedCategory =
+        categorySelect.value;
+
+      const filteredStores = allStores.filter(
+        function (store) {
+          return matchCategory(
+            store,
+            selectedCategory
+          );
+        }
+      );
+
+      resultCount.textContent =
+        `共 ${filteredStores.length} 家`;
+
+      if (filteredStores.length === 0) {
+        storeList.innerHTML = `
+          <div class="empty">
+            目前搜尋範圍內找不到符合條件的店家。
+          </div>
+        `;
+
+        return;
+      }
+
+      storeList.innerHTML = filteredStores
+        .map(function (store) {
+          const googleMapsUrl =
+            createGoogleMapsUrl(store);
+
+          return `
+            <article class="store-card">
+              <a
+                class="store-name"
+                href="${googleMapsUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ${escapeHtml(store.name)}
+              </a>
+
+              <div class="store-info">
+                <div>
+                  地址：
+                  ${escapeHtml(store.address)}
+                </div>
+
+                ${
+                  store.phone
+                    ? `
+                      <div>
+                        電話：
+                        ${escapeHtml(store.phone)}
+                      </div>
+                    `
+                    : ""
                 }
-            } catch (err) {
-                addressText.innerText = "已取得經緯度座標";
-            }
+              </div>
+
+              <span class="distance">
+                距離約 ${formatDistance(store.distance)}
+              </span>
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    /*
+     * 建立 Google 地圖連結
+     */
+    function createGoogleMapsUrl(store) {
+      const query = [
+        store.name,
+        store.address,
+        `${store.latitude},${store.longitude}`
+      ].join(", ");
+
+      return (
+        "https://www.google.com/maps/search/?api=1&query=" +
+        encodeURIComponent(query)
+      );
+    }
+
+    /*
+     * 格式化距離
+     */
+    function formatDistance(distance) {
+      if (distance < 1000) {
+        return `${Math.round(distance)} 公尺`;
+      }
+
+      return `${(distance / 1000).toFixed(1)} 公里`;
+    }
+
+    /*
+     * 避免店家資料中的 HTML 造成安全問題
+     */
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /*
+     * 切換店家類型時，直接重新篩選目前資料
+     */
+    categorySelect.addEventListener(
+      "change",
+      function () {
+        if (allStores.length > 0) {
+          renderStores();
         }
-
-        async function setManualLocation() {
-            const input = document.getElementById('manualAddressInput').value.trim();
-            if (!input) return;
-
-            const addressText = document.getElementById('addressText');
-            const coordsText = document.getElementById('coordsText');
-            addressText.innerText = `搜尋地址中: ${input}...`;
-
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}&limit=1`);
-                const data = await res.json();
-                if (data && data.length > 0) {
-                    userCoords.lat = parseFloat(data[0].lat);
-                    userCoords.lng = parseFloat(data[0].lon);
-                    currentAddressName = data[0].display_name.split(',')[0];
-                    addressText.innerText = currentAddressName;
-                    coordsText.innerText = `經緯度: ${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)}`;
-                } else {
-                    addressText.innerText = "找不到該地址，請重試或輸入更具體的地標。";
-                }
-            } catch (e) {
-                addressText.innerText = "地址查詢失敗，請檢查網路連線。";
-            }
-        }
-
-        async function searchNearbyPlaces() {
-            const radius = document.querySelector('input[name="distance"]:checked').value;
-            const cuisineCategory = document.getElementById('cuisineSelect').value;
-            const loader = document.getElementById('loader');
-            const placesList = document.getElementById('placesList');
-            const countBadge = document.getElementById('resultCountBadge');
-
-            loader.classList.remove('hidden');
-            placesList.innerHTML = '';
-            countBadge.classList.add('hidden');
-
-            let filterTag = 'node["amenity"~"restaurant|cafe|fast_food|food_court"]';
-            if (cuisineCategory === 'cafe') filterTag = 'node["amenity"="cafe"]';
-            else if (cuisineCategory === 'fast_food' || cuisineCategory === 'bento') filterTag = 'node["amenity"="fast_food"]';
-            else if (cuisineCategory === 'restaurant') filterTag = 'node["amenity"="restaurant"]';
-
-            const query = `
-                [out:json][timeout:15];
-                (
-                  ${filterTag}(around:${radius},${userCoords.lat},${userCoords.lng});
-                );
-                out body 40;
-            `;
-
-            try {
-                const response = await fetch('https://overpass-api.de/api/interpreter', {
-                    method: 'POST',
-                    body: query
-                });
-
-                if (!response.ok) throw new Error('Overpass network error');
-
-                const data = await response.json();
-                let results = data.elements || [];
-
-                currentPlaces = results.map(item => {
-                    const name = item.tags.name || item.tags['name:zh'] || item.tags['name:en'] || '';
-                    const cuisineTag = item.tags.cuisine || item.tags.amenity || '餐飲店';
-                    const dist = calculateDistance(userCoords.lat, userCoords.lng, item.lat, item.lon);
-                    
-                    return {
-                        id: item.id,
-                        name: name,
-                        type: translateCuisine(cuisineTag, name),
-                        distance: dist,
-                        lat: item.lat,
-                        lng: item.lon
-                    };
-                }).filter(p => p.name.trim() !== '');
-
-                if (cuisineCategory !== 'all') {
-                    currentPlaces = filterByCategory(currentPlaces, cuisineCategory);
-                }
-
-                currentPlaces.sort((a, b) => a.distance - b.distance);
-                renderPlaces(currentPlaces);
-
-                if (currentPlaces.length > 0) {
-                    const topNames = currentPlaces.slice(0, 10).map(p => p.name);
-                    drawWheel(topNames);
-                    document.getElementById('wheelSubtitle').innerText = `已載入附近 ${topNames.length} 家真實店家`;
-                }
-
-            } catch (error) {
-                console.warn("Overpass API error, using fallback dataset:", error);
-                generateFallbackPlaces(cuisineCategory, radius);
-            } finally {
-                loader.classList.add('hidden');
-            }
-        }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371000; 
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return Math.round(R * c);
-        }
-
-        function translateCuisine(tag, name) {
-            if (name.includes('麵')) return '麵食館';
-            if (name.includes('飯') || name.includes('便當')) return '便當快餐店';
-            if (name.includes('鍋')) return '火鍋店';
-            if (name.includes('燒') || name.includes('烤')) return '燒烤店';
-            if (name.includes('早') || name.includes('漢堡')) return '早午餐店';
-            if (name.includes('咖啡') || name.includes('Cafe')) return '咖啡廳';
-            if (name.includes('茶') || name.includes('飲')) return '飲料店';
-            if (name.includes('冰') || name.includes('甜點')) return '甜點冰品店';
-            if (name.includes('小吃') || name.includes('雞排')) return '小吃店';
-            
-            const map = {
-                'restaurant': '餐廳',
-                'cafe': '咖啡廳',
-                'fast_food': '小吃店',
-                'noodle': '麵食館',
-                'hotpot': '火鍋店'
-            };
-            return map[tag.toLowerCase()] || '美食店家';
-        }
-
-        function filterByCategory(places, cat) {
-            return places.filter(p => {
-                const n = p.name;
-                const t = p.type;
-                switch(cat) {
-                    case 'restaurant': return t === '餐廳' || n.includes('餐') || n.includes('館');
-                    case 'fast_food': return t === '小吃店' || n.includes('小吃') || n.includes('雞排') || n.includes('滷味');
-                    case 'noodles': return t === '麵食館' || n.includes('麵') || n.includes('拉麵') || n.includes('牛肉麵');
-                    case 'bento': return t === '便當快餐店' || n.includes('便當') || n.includes('快餐') || n.includes('飯') || n.includes('排骨');
-                    case 'hotpot': return t === '火鍋店' || n.includes('鍋') || n.includes('火鍋') || n.includes('涮涮鍋');
-                    case 'bbq': return t === '燒烤店' || n.includes('燒') || n.includes('烤') || n.includes('串燒');
-                    case 'brunch': return t === '早午餐店' || n.includes('早') || n.includes('Brunch') || n.includes('漢堡') || n.includes('吐司');
-                    case 'cafe': return t === '咖啡廳' || n.includes('咖啡') || n.includes('Cafe') || n.includes('Coffee');
-                    case 'dessert': return t === '甜點冰品店' || n.includes('冰') || n.includes('甜點') || n.includes('豆花') || n.includes('蛋糕');
-                    case 'beverage': return t === '飲料店' || n.includes('茶') || n.includes('飲') || n.includes('奶茶');
-                    default: return true;
-                }
-            });
-        }
-
-        function renderPlaces(places) {
-            const placesList = document.getElementById('placesList');
-            const countBadge = document.getElementById('resultCountBadge');
-
-            countBadge.innerText = `${places.length} 家`;
-            countBadge.classList.remove('hidden');
-
-            if (places.length === 0) {
-                placesList.innerHTML = `
-                    <div class="col-span-full bg-white rounded-2xl p-8 text-center border border-slate-200">
-                        <div class="text-3xl text-amber-500 mb-2"><i class="fa-solid fa-magnifying-glass font-black"></i></div>
-                        <h4 class="font-bold text-slate-700">附近的範圍內找不到相符的店家</h4>
-                        <p class="text-xs text-slate-400 mt-1">建議可以放大距離（例如選擇 1.5公里）或切換至「全部」餐飲類型再試試！</p>
-                    </div>
-                `;
-                return;
-            }
-
-            placesList.innerHTML = places.map(place => {
-                // Precise Google Maps Direct Navigation Link using origin (user coordinates) and destination
-                const googleMapsDirUrl = `https://www.google.com/maps/dir/?api=1&origin=${userCoords.lat},${userCoords.lng}&destination=${encodeURIComponent(place.name)}&destination_place_id=&travelmode=walking`;
-
-                return `
-                    <div class="bg-white rounded-2xl p-4 border border-orange-100 hover:border-brand-500/50 hover:shadow-md transition flex flex-col justify-between group">
-                        <div>
-                            <div class="flex items-start justify-between gap-2 mb-2">
-                                <a href="${googleMapsDirUrl}" target="_blank" rel="noopener noreferrer" class="font-bold text-slate-800 text-sm sm:text-base group-hover:text-brand-600 transition flex items-center gap-1.5 leading-snug cursor-pointer">
-                                    <span>${place.name}</span>
-                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 group-hover:text-brand-500"></i>
-                                </a>
-                                <span class="shrink-0 text-[10px] font-bold bg-orange-50 text-brand-600 px-2 py-0.5 rounded-full border border-orange-100">
-                                    ${place.type}
-                                </span>
-                            </div>
-                            <div class="flex items-center gap-3 text-xs text-slate-500 mb-3">
-                                <span class="flex items-center gap-1"><i class="fa-solid fa-person-walking text-brand-500"></i> 距離約 ${place.distance} m</span>
-                            </div>
-                        </div>
-
-                        <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                            <span class="text-[11px] text-slate-400 truncate max-w-[120px]">
-                                <i class="fa-solid fa-location-dot"></i> 起點: ${currentAddressName}
-                            </span>
-                            <a href="${googleMapsDirUrl}" target="_blank" rel="noopener noreferrer" class="text-xs text-brand-600 font-bold hover:text-brand-700 flex items-center gap-1 bg-orange-50 px-3 py-1.5 rounded-xl group-hover:bg-brand-500 group-hover:text-white transition shadow-sm">
-                                <i class="fa-solid fa-diamond-turn-right"></i> Google 導航
-                            </a>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function generateFallbackPlaces(category, radius) {
-            const samplePool = [
-                { name: '經典傳統牛肉麵館', type: '麵食館', dist: 280 },
-                { name: '排骨大王台式便當', type: '便當快餐店', dist: 350 },
-                { name: '溫州大餛飩', type: '麵食館', dist: 410 },
-                { name: '小蒙牛日式火鍋', type: '火鍋店', dist: 520 },
-                { name: '舒芙蕾早午餐', type: '早午餐店', dist: 480 },
-                { name: '星巴克咖啡館', type: '咖啡廳', dist: 150 },
-                { name: '手搖珍珠奶茶', type: '飲料店', dist: 220 },
-                { name: '古早味豆花冰品', type: '甜點冰品店', dist: 390 },
-                { name: '韓式燒肉專賣店', type: '燒烤店', dist: 680 },
-                { name: '鹽酥雞台味小吃', type: '小吃店', dist: 290 }
-            ];
-
-            currentPlaces = samplePool.map((item, idx) => ({
-                id: `fallback-${idx}`,
-                name: item.name,
-                type: item.type,
-                distance: item.dist,
-                lat: userCoords.lat + (Math.random() - 0.5) * 0.005,
-                lng: userCoords.lng + (Math.random() - 0.5) * 0.005
-            })).filter(p => p.distance <= parseInt(radius));
-
-            if (category !== 'all') {
-                currentPlaces = filterByCategory(currentPlaces, category);
-            }
-
-            renderPlaces(currentPlaces);
-            if (currentPlaces.length > 0) {
-                drawWheel(currentPlaces.map(p => p.name));
-            }
-        }
-
-        function drawWheel(items) {
-            activeWheelItems = items && items.length > 0 ? items : defaultWheelItems;
-            const canvas = document.getElementById('wheelCanvas');
-            const ctx = canvas.getContext('2d');
-            const numOptions = activeWheelItems.length;
-            const arcSize = (2 * Math.PI) / numOptions;
-
-            const colors = [
-                '#ea580c', '#f97316', '#fb923c', '#fdba74', 
-                '#f59e0b', '#fbbf24', '#fcd34d', '#f43f5e'
-            ];
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            for (let i = 0; i < numOptions; i++) {
-                const angle = i * arcSize;
-                ctx.beginPath();
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.moveTo(140, 140);
-                ctx.arc(140, 140, 135, angle, angle + arcSize);
-                ctx.lineTo(140, 140);
-                ctx.fill();
-
-                ctx.save();
-                ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 12px Noto Sans TC, sans-serif";
-                ctx.translate(140, 140);
-                ctx.rotate(angle + arcSize / 2);
-                ctx.textAlign = "right";
-                
-                let text = activeWheelItems[i];
-                if (text.length > 6) text = text.substring(0, 6) + '...';
-                
-                ctx.fillText(text, 120, 4);
-                ctx.restore();
-            }
-        }
-
-        function toggleWheelModal() {
-            const modal = document.getElementById('wheelModal');
-            modal.classList.toggle('hidden');
-        }
-
-        function spinWheel() {
-            if (isSpinning) return;
-            isSpinning = true;
-
-            const spinBtn = document.getElementById('spinBtn');
-            const resultDiv = document.getElementById('wheelResult');
-            const canvas = document.getElementById('wheelCanvas');
-
-            spinBtn.disabled = true;
-            spinBtn.classList.add('opacity-50');
-            resultDiv.innerHTML = '<p class="text-xs font-bold text-brand-600 animate-pulse">命運轉盤旋轉中...</p>';
-
-            const degrees = Math.floor(2160 + Math.random() * 1080);
-            currentRotation += degrees;
-
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
-
-            setTimeout(() => {
-                isSpinning = false;
-                spinBtn.disabled = false;
-                spinBtn.classList.remove('opacity-50');
-
-                const numOptions = activeWheelItems.length;
-                const arcDegrees = 360 / numOptions;
-                const actualDegrees = currentRotation % 360;
-                
-                const winningIndex = Math.floor((360 - (actualDegrees % 360) + 270) % 360 / arcDegrees);
-                const selectedName = activeWheelItems[winningIndex];
-
-                const googleNavUrl = `https://www.google.com/maps/dir/?api=1&origin=${userCoords.lat},${userCoords.lng}&destination=${encodeURIComponent(selectedName)}`;
-
-                resultDiv.innerHTML = `
-                    <div class="bg-orange-50 p-3 rounded-2xl w-full border border-orange-200">
-                        <p class="text-[11px] text-slate-500">今天午餐就決定吃：</p>
-                        <h4 class="text-base font-black text-brand-600 my-0.5 truncate">${selectedName}</h4>
-                        <a href="${googleNavUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs text-brand-600 font-bold hover:underline mt-1">
-                            <i class="fa-solid fa-diamond-turn-right"></i> 開啟 Google 地圖開始導航
-                        </a>
-                    </div>
-                `;
-            }, 4000);
-        }
-    </script>
+      }
+    );
+  </script>
 </body>
 </html>
